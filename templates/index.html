@@ -227,7 +227,7 @@
 
                     <div class="form-group">
                         <label>Posting Hour (0-23)</label>
-                        <input type="number" name="hour" min="0" max="23" value="{{ hour or 18 }}" required>
+                        <input type="number" name="hour" min="0" max="23" value="{{ hour if hour is defined and hour is not none else 18 }}" required>
                     </div>
                 </div>
 

@@ -125,7 +125,7 @@ def home():
                 np.mean([
                     vlm_results["color_score"],
                     vlm_results["visual_clarity_score"],
-                    vlm_results["text_density_score"],
+                    10 - vlm_results["text_density_score"],
                     vlm_results["emotional_impact_score"],
                 ])
                 * 10
