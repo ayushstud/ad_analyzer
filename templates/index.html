@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdLens - Analyze your ad</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0c;
+            --bg-secondary: #131417;
+            --accent-primary: #ccff00;
+            --accent-glow: rgba(204, 255, 0, 0.3);
+            --success: #ccff00;
+            --warning: #facc15;
+            --danger: #f87171;
+            --text-main: #ffffff;
+            --text-muted: #a1a1aa;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --btn-text: #000;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-primary);
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 0 2rem 3rem 2rem;
+            overflow-x: hidden;
+        }
+
+        .container { max-width: 900px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; }
+
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 2rem 0; margin-bottom: 3rem; }
+        .logo { font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.02em; }
+        .logo-icon { background: var(--accent-primary); color: #000; padding: 0.2rem; border-radius: 8px; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; }
+        .badge { padding: 0.4rem 1.2rem; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.03); border-radius: 20px; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.05em; }
+
+        header { text-align: center; margin-bottom: 3.5rem; }
+        header h1 { font-size: 5rem; font-weight: 900; line-height: 1.05; margin-bottom: 1.5rem; letter-spacing: -0.03em; text-transform: capitalize; }
+        header h1 .highlight { color: var(--accent-primary); display: block; }
+        header p { color: var(--text-muted); font-size: 1.15rem; max-width: 650px; margin: 0 auto; line-height: 1.6; font-weight: 300; }
+
+        @media (max-width: 768px) { header h1 { font-size: 3.5rem; } }
+
+        .dashboard { width: 100%; }
+        .form-panel { background: rgba(255, 255, 255, 0.01); border: 1px solid transparent; border-radius: 24px; padding: 0; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+
+        .type-selector { display: flex; justify-content: center; gap: 0.8rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+        .radio-pill input { display: none; }
+        .radio-pill .pill-content { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 0.7rem 1.2rem; border-radius: 12px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; font-weight: 500; font-size: 0.95rem; }
+        .radio-pill:hover .pill-content { background: rgba(255,255,255,0.08); color: white; }
+        .radio-pill input:checked + .pill-content { background: var(--accent-primary); color: var(--btn-text); border-color: var(--accent-primary); font-weight: 600; }
+
+        .upload-area { background: #111113; border: 1px dashed rgba(255,255,255,0.2); border-radius: 20px; padding: 4.5rem 2rem; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 1.5rem; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .upload-area:hover { border-color: rgba(255,255,255,0.4); background: #161619; }
+        .upload-icon { background: #3b82f6; color: white; width: 54px; height: 54px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 1.5rem; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4); }
+        .upload-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; color: white; letter-spacing: -0.02em; }
+        .upload-subtitle { color: var(--text-muted); font-size: 0.95rem; }
+
+        #imageInput { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
+
+        .headline-group { margin-bottom: 1.5rem; }
+        .headline-group label { display: block; margin-bottom: 0.6rem; color: var(--text-muted); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; padding: 2rem; border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px; background: rgba(0,0,0,0.2); }
+        .form-group label { display: block; margin-bottom: 0.6rem; color: var(--text-muted); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        input, select { width: 100%; padding: 0.9rem 1rem; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-family: 'Outfit', sans-serif; font-size: 0.95rem; transition: all 0.3s ease; }
+        input:focus, select:focus { outline: none; border-color: var(--accent-primary); }
+
+        .btn-submit { width: 100%; padding: 1.25rem; background: linear-gradient(180deg, #788d37 0%, #516027 100%); color: #fff; border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; font-size: 1.15rem; font-weight: 700; font-family: 'Outfit', sans-serif; cursor: pointer; transition: all 0.3s ease; box-shadow: inset 0 1px 0 rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; gap: 0.8rem; }
+        .btn-submit:hover { background: linear-gradient(180deg, #879f3e 0%, #5b6d2c 100%); transform: translateY(-1px); }
+
+        .advanced-settings-toggle { text-align: center; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: color 0.2s; padding: 0.5rem; }
+        .advanced-settings-toggle:hover { color: #fff; }
+
+        #imagePreview { display: none; max-width: 100%; max-height: 400px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); object-fit: contain; }
+        .upload-content-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 5; pointer-events: none; }
+
+        .results-wrapper { margin-top: 4rem; padding-top: 4rem; border-top: 1px solid rgba(255,255,255,0.05); }
+        .results-panel { display: flex; flex-direction: column; gap: 1.5rem; }
+
+        .score-container { display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 4rem; background: rgba(255,255,255,0.01); border-radius: 24px; border: 1px solid var(--glass-border); position: relative; }
+
+        .score-circle { width: 200px; height: 200px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 5rem; font-weight: 800; background: conic-gradient(var(--score-color) var(--score-degrees), rgba(255,255,255,0.03) 0); position: relative; box-shadow: 0 0 50px var(--score-glow); animation: fadeInScale 0.8s ease-out forwards; }
+        .score-circle::before { content: ""; position: absolute; inset: 12px; background: var(--bg-primary); border-radius: 50%; }
+        .score-value { position: relative; z-index: 10; color: #fff; letter-spacing: -0.05em; }
+
+        .feedback-badge { margin-top: 2.5rem; padding: 0.8rem 2.5rem; border-radius: 30px; font-weight: 700; font-size: 1.25rem; background: rgba(0,0,0,0.4); border: 1px solid; animation: slideUp 0.5s ease-out 0.3s both; }
+
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .metric-card { background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 2.5rem; border-radius: 20px; animation: slideUp 0.5s ease-out both; }
+
+        .list-items { list-style: none; margin-top: 1.5rem; }
+        .list-items li { padding: 1.2rem 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; align-items: flex-start; gap: 1rem; font-size: 1.1rem; color: #d4d4d8; line-height: 1.6; }
+        .list-items li:last-child { border-bottom: none; }
+
+        .icon-good { color: var(--success); font-size: 1.4rem; }
+        .icon-bad { color: var(--danger); font-size: 1.4rem; }
+        .icon-warn { color: var(--warning); font-size: 1.4rem; }
+
+        .model-info { margin-top: 1.5rem; padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 16px; }
+        .model-info h4 { color: var(--accent-primary); margin-bottom: 0.8rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        .model-info table { width: 100%; border-collapse: collapse; }
+        .model-info td { padding: 0.4rem 0.8rem; font-size: 0.85rem; color: var(--text-muted); }
+        .model-info td:first-child { font-weight: 600; color: #d4d4d8; }
+        .model-info tr.best td { color: var(--accent-primary); }
+
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <nav>
+        <div class="logo">
+            <span class="logo-icon">&#128269;</span>
+            <span>Ad<span style="color: var(--accent-primary);">Lens</span></span>
+        </div>
+        <div class="badge">AI-POWERED</div>
+    </nav>
+
+    <header>
+        <h1>
+            <div>Analyze your ad.</div>
+            <div class="highlight">Improve it instantly.</div>
+        </h1>
+        <p>Upload any ad &mdash; poster, banner, or micro-site screenshot &mdash; and get an AI-powered audit with scores, suggestions, and actionable improvements.</p>
+    </header>
+
+    <div class="dashboard">
+        <div class="form-panel">
+            <form id="adForm" method="POST" enctype="multipart/form-data">
+
+                <div class="type-selector">
+                    <label class="radio-pill">
+                        <input type="radio" name="ad_type" value="1" {% if ad_type == 1 %}checked{% endif %}>
+                        <span class="pill-content">&#128241; Poster</span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="ad_type" value="2" {% if ad_type == 2 %}checked{% endif %}>
+                        <span class="pill-content">&#128241; Social Ad</span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="ad_type" value="3" {% if ad_type == 3 %}checked{% endif %}>
+                        <span class="pill-content">&#128208; Banner</span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="ad_type" value="4" {% if ad_type == 4 %}checked{% endif %}>
+                        <span class="pill-content">&#127760; Micro Website</span>
+                    </label>
+                    <label class="radio-pill">
+                        <input type="radio" name="ad_type" value="5" {% if ad_type == 5 %}checked{% endif %}>
+                        <span class="pill-content">&#9993;&#65039; Email Ad</span>
+                    </label>
+                </div>
+
+                <div class="upload-area" id="dropZone">
+                    <input type="file" id="imageInput" name="ad_image" accept="image/png, image/jpeg, image/webp" onchange="previewImage(event)">
+                    <div class="upload-content-wrapper" id="uploadPlaceholder">
+                        <div class="upload-icon">&#11014;&#65039;</div>
+                        <div class="upload-title">Drop your ad here</div>
+                        <div class="upload-subtitle">PNG, JPG, WEBP &mdash; up to 10 MB</div>
+                    </div>
+                    <img id="imagePreview" src="" alt="Ad Preview">
+                </div>
+
+                <div class="headline-group">
+                    <label>Ad Headline</label>
+                    <input type="text" name="headline" placeholder="Enter your ad headline..." value="{{ headline or '' }}">
+                </div>
+
+                <div class="advanced-settings-toggle" onclick="toggleSettings()">
+                    <span>&#9881;&#65039; Advanced Settings</span> <span id="toggleIcon">&#9660;</span>
+                </div>
+
+                <div class="settings-grid" id="advancedSettings" style="display: none;">
+                    <div class="form-group">
+                        <label>Color Style</label>
+                        <select name="color">
+                            <option value="3" {% if color_val == 3 %}selected{% endif %}>Dark &amp; Moody</option>
+                            <option value="6" {% if color_val == 6 or not color_val %}selected{% endif %}>Balanced / Neutral</option>
+                            <option value="9" {% if color_val == 9 %}selected{% endif %}>Bright &amp; Vibrant</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Target Audience</label>
+                        <select name="audience">
+                            <option value="1" {% if audience == 1 %}selected{% endif %}>Students / Gen Z</option>
+                            <option value="2" {% if audience == 2 %}selected{% endif %}>Professionals (B2B)</option>
+                            <option value="3" {% if audience == 3 or not audience %}selected{% endif %}>General / Broad</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Platform</label>
+                        <select name="platform">
+                            <option value="1" {% if platform == 1 or not platform %}selected{% endif %}>Instagram</option>
+                            <option value="2" {% if platform == 2 %}selected{% endif %}>YouTube</option>
+                            <option value="3" {% if platform == 3 %}selected{% endif %}>Facebook</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Day of Week</label>
+                        <select name="day">
+                            <option value="1" {% if day == 1 %}selected{% endif %}>Monday</option>
+                            <option value="2" {% if day == 2 %}selected{% endif %}>Tuesday</option>
+                            <option value="3" {% if day == 3 or not day %}selected{% endif %}>Wednesday</option>
+                            <option value="4" {% if day == 4 %}selected{% endif %}>Thursday</option>
+                            <option value="5" {% if day == 5 %}selected{% endif %}>Friday</option>
+                            <option value="6" {% if day == 6 %}selected{% endif %}>Saturday</option>
+                            <option value="7" {% if day == 7 %}selected{% endif %}>Sunday</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Posting Hour (0-23)</label>
+                        <input type="number" name="hour" min="0" max="23" value="{{ hour or 18 }}" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit"><span>&#128300;</span> Analyze My Ad</button>
+            </form>
+        </div>
+
+        <script>
+            function previewImage(event) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    const output = document.getElementById('imagePreview');
+                    const placeholder = document.getElementById('uploadPlaceholder');
+                    const dropZone = document.getElementById('dropZone');
+                    output.src = reader.result;
+                    output.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    dropZone.style.padding = '1rem';
+                };
+                if (event.target.files[0]) {
+                    reader.readAsDataURL(event.target.files[0]);
+                }
+            }
+            function toggleSettings() {
+                const settings = document.getElementById('advancedSettings');
+                const icon = document.getElementById('toggleIcon');
+                if (settings.style.display === 'none') {
+                    settings.style.display = 'grid';
+                    icon.innerHTML = '\u25B2';
+                } else {
+                    settings.style.display = 'none';
+                    icon.innerHTML = '\u25BC';
+                }
+            }
+        </script>
+
+        {% if score is defined %}
+        <div class="results-wrapper" id="results">
+            <h2 style="text-align: center; margin-bottom: 2.5rem; font-size: 2.5rem; font-weight: 800; text-transform: capitalize;">Analysis Results</h2>
+            <div class="results-panel">
+                <div class="score-container" style="--score-degrees: {{ score * 3.6 }}deg; --score-color: {{ color_hex }}; --score-glow: {{ color_glow }};">
+                    <h3 style="margin-bottom: 2rem; position: relative; z-index: 10; font-size: 1.1rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">Final Score</h3>
+                    <div class="score-circle">
+                        <span class="score-value">{{ score }}</span>
+                    </div>
+                    <div class="feedback-badge" style="color: {{ color_hex }}; border-color: {{ color_glow }};">
+                        {{ feedback }}
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card" style="text-align: center;">
+                        <span style="display: block; font-size: 1rem; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">&#129302; ML Algorithm Score</span>
+                        <span style="font-size: 3.5rem; font-weight: 800; color: #d4d4d8;">{{ ml_score }}</span>
+                    </div>
+                    {% if vlm_score is not none %}
+                    <div class="metric-card" style="text-align: center;">
+                        <span style="display: block; font-size: 1rem; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">&#128065;&#65039; Visual Impact Score</span>
+                        <span style="font-size: 3.5rem; font-weight: 800; color: var(--accent-primary);">{{ vlm_score }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="model-info">
+                    <h4>&#9881;&#65039; ML Model Details</h4>
+                    <table>
+                        {% for name, mae in cv_results.items() %}
+                        <tr {% if name == best_model %}class="best"{% endif %}>
+                            <td>{{ name | replace('_', ' ') | title }}</td>
+                            <td>MAE {{ mae }}</td>
+                            {% if name == best_model %}<td>&#11088; best</td>{% else %}<td></td>{% endif %}
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+
+                <div class="metrics-grid" style="grid-template-columns: 1fr;">
+                    <div class="metric-card">
+                        <h3 style="color: #fff; font-size: 1.4rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">&#128161; Optimization Suggestions</h3>
+                        <ul class="list-items">
+                            {% for s in suggestions %}
+                            <li><span class="icon-warn">&#9889;</span> <span>{{ s }}</span></li>
+                            {% endfor %}
+                            {% if not suggestions %}
+                            <li><span class="icon-good">&#10003;</span> <span>Your ad looks perfect! No major optimizations needed.</span></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    <div class="metric-card">
+                        <h3 style="color: #fff; font-size: 1.4rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">&#128270; Explainable Insights</h3>
+                        <ul class="list-items">
+                            {% for i in insights %}
+                            <li>
+                                {% if "(+" in i %}
+                                    <span class="icon-good">&#128200;</span>
+                                {% elif "(-" in i %}
+                                    <span class="icon-bad">&#128201;</span>
+                                {% else %}
+                                    <span>&#128065;&#65039;</span>
+                                {% endif %}
+                                <span>{{ i }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <script>
+                window.onload = function () {
+                    setTimeout(function () {
+                        document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                };
+            </script>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>
